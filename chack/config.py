@@ -43,6 +43,7 @@ class TelegramConfig:
     group_allowlist_ids: List[int] = field(default_factory=list)
     group_allowlist_title_regex: List[str] = field(default_factory=list)
     group_require_regex: List[str] = field(default_factory=list)
+    max_turns: int = 75
     memory_max_messages: int = 16
     memory_reset_minutes: int = 30
     long_term_memory_enabled: bool = True

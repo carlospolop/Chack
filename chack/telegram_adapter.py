@@ -194,7 +194,8 @@ class TelegramBot:
         )
         output = result.get("output", "")
         steps = result.get("intermediate_steps", [])
-        actions = format_tool_steps(steps, max_turns=50, notify_every=10)
+        max_turns = self.config.telegram.max_turns
+        actions = format_tool_steps(steps, max_turns=max_turns, notify_every=10)
         rounds_used = len(steps) + 1 if output else len(steps)
         tools_used = len(steps)
         model_name = self.config.model.chat or self.config.model.primary
@@ -206,7 +207,7 @@ class TelegramBot:
             cached_prompt_tokens=cached_prompt_tokens,
         )
         cost_text = f"${cost:.6f}" if cost is not None else "unknown"
-        suffix = f"\n\n🔁 {rounds_used}/50 | 🧰 {tools_used} | 💲 {cost_text}"
+        suffix = f"\n\n🔁 {rounds_used}/{max_turns} | 🧰 {tools_used} | 💲 {cost_text}"
         # if actions:
         #     return f"{output}\n\nActions performed:\n{actions}{suffix}"
         return f"{output}{suffix}"

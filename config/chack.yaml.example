@@ -53,6 +53,7 @@ telegram:
   group_allowlist_title_regex: []
   group_require_regex:
     - "^chack\\b"
+  max_turns: 75
   memory_max_messages: 16
   memory_reset_minutes: 30
   long_term_memory_enabled: true
