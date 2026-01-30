@@ -1,6 +1,6 @@
 # Chack
 
-Chack is a Dockerized chatbot with autonomous capabilities. It supports Telegram (DMs + groups) and Discord, and uses LangChain with configurable models.
+Chack is a Dockerized chatbot with autonomous capabilities. It supports Telegram (DMs + groups) and Discord, and can run on either LangChain or the OpenAI Agents SDK.
 
 ## Features
 - Telegram and Discord support with allowlists and regex triggers.
@@ -52,9 +52,20 @@ Chack always receives these tools when enabled:
 If `system_prompt` (or `discord.system_prompt`) contains `$$TOOLS$$`, it is replaced at startup
 with the contents of `config/TOOLS.md`.
 
+### Agent backend
+Choose the runtime in `agent.backend`:
+- `langchain`: uses LangChain agents and its memory buffer.
+- `openai_agents`: uses the OpenAI Agents SDK with the same tools and settings.
+
 ### Model
 - `model.primary`: main agent model (tool-calling + task execution).
 - `model.chat`: chat-oriented model (used in memory summarization and chat-only calls).
+
+### Memory behavior
+- **Short-term memory**: controlled by `memory_max_messages`.
+  - LangChain backend uses `ConversationSummaryBufferMemory` (summarizes when trimming).
+  - OpenAI Agents backend uses an SDK session and keeps a rolling summary when trimming, which is injected into the system prompt.
+- **Long-term memory**: when `memory_reset_minutes` elapses, the bot summarizes the current conversation and stores it in `long_term_memory_dir`. The stored summary is appended to the system prompt on future runs.
 
 ## Files of interest
 - `config/chack.yaml.example`
