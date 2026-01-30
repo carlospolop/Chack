@@ -1,0 +1,12 @@
+services:
+  chack:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      CHACK_CONFIG: /app/config/chack.yaml
+      GOOGLE_APPLICATION_CREDENTIALS: /root/.gcp/credentials.json
+    volumes:
+      - ./config:/app/config:ro
+      - ${GOOGLE_APPLICATION_CREDENTIALS_FILE:-./malwaremap-1522503964856-34a394f041d2.json}:/root/.gcp/credentials.json:ro
+    restart: unless-stopped

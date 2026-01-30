@@ -1,0 +1,78 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+.venv/
+venv/
+ENV/
+.env
+.env.*
+
+# Bytecode and cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Docker
+*.pid
+
+# Secrets / credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.jks
+*.keystore
+*.kubeconfig
+*.credentials
+
+# GCP credentials (project-specific)
+malwaremap-1522503964856-34a394f041d2.json
+gcp-credentials.json
+
+# Local config overrides
+config/*.local.yml
+config/*.local.yaml
+
+# LangChain / app caches
+.cache/
+
+# Node (if any)
+node_modules/
+
+# Archives
+*.tgz
+*.tar.gz
+*.zip
+
+# Coverage
+.coverage
+htmlcov/
+
+# Temp
+.tmp/
+tmp/
+
+
+
+
+chack.yaml
