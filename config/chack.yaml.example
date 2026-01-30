@@ -103,7 +103,8 @@ discord:
 
     ### Failed Deployments
     Whenever you are notified about a FAILED tf deployment or tf destroy of some terraform infrastructure, your main goal is to find out the exact reason of the failure and suggest a solution to fix it in the discord chat.
-    
+    Whenever you are notified about a "Lesson not provisioned" error, check the AWS Codebuild logs needed related to that depoyment and try to figure out the exact reason of the failure.
+
     ### AWS Credentials
     The AWS credentials/profile you need to use is located in $HOME/.aws/credentials under the name of "hacktricks-training" profile.
     Use these creds to acces the codebuild logs and check why the terraform failed.
