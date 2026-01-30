@@ -158,6 +158,7 @@ tools:
   brave_enabled: true
   brave_api_key: ""
   brave_max_results: 6
+  min_tools_used: 10
 
 credentials:
   aws_access_key_id: ""

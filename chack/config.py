@@ -77,6 +77,7 @@ class ToolsConfig:
     brave_enabled: bool = True
     brave_api_key: str = ""
     brave_max_results: int = 6
+    min_tools_used: int = 10
 
 
 @dataclass

@@ -40,10 +40,21 @@ if [ -n "$AZURE_APP_ID" ] && [ -n "$AZURE_SA_SECRET_VALUE" ] && [ -n "$AZURE_TEN
 fi
 
 if [ -n "$GH_TOKEN" ]; then
-  printf "%s" "$GH_TOKEN" | gh auth login --with-token >/tmp/gh-auth.log 2>&1 || true
-  gh auth setup-git >/tmp/gh-auth.log 2>&1 || true
-  git config --global user.name "chack" >/tmp/gh-auth.log 2>&1 || true
-  git config --global user.email "chack@hacktricks.bot" >/tmp/gh-auth.log 2>&1 || true
+  : > /tmp/gh-auth.log
+  GH_TOKEN_VALUE="$GH_TOKEN"
+  unset GH_TOKEN
+  if [ ! -f /root/.config/gh/hosts.yml ]; then
+    printf "%s" "$GH_TOKEN_VALUE" | gh auth login --with-token >>/tmp/gh-auth.log 2>&1 || true
+  fi
+  if ! gh auth status -h github.com >>/tmp/gh-auth.log 2>&1; then
+    echo "WARNING: gh auth failed; see /tmp/gh-auth.log" >&2
+  fi
+  gh auth setup-git >>/tmp/gh-auth.log 2>&1 || true
+  git config --global user.name "chack" >>/tmp/gh-auth.log 2>&1 || true
+  git config --global user.email "chack@hacktricks.bot" >>/tmp/gh-auth.log 2>&1 || true
+  export GH_TOKEN="$GH_TOKEN_VALUE"
+else
+  echo "WARNING: GH_TOKEN is not set; gh will be unauthenticated." >&2
 fi
 
 exec "$@"

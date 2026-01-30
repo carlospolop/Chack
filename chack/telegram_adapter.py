@@ -185,8 +185,28 @@ class TelegramBot:
                 self._executors.pop(chat_id, None)
                 self._last_bot_reply_at.pop(chat_id, None)
         executor = self._get_executor(chat_id)
-        with get_openai_callback() as cb:
-            result = await asyncio.to_thread(executor.invoke, {"input": text})
+        min_tools_used = max(0, int(self.config.tools.min_tools_used or 0))
+        max_attempts = 20
+        result = {}
+        cb = None
+        for attempt in range(max_attempts):
+            attempt_text = text
+            if attempt and min_tools_used > 0:
+                attempt_text = (
+                    f"{text}\n\nIMPORTANT: Use at least {min_tools_used} tools before your final answer. "
+                    "Always use tools to check for more data, confirm actions were performed, or verify "
+                    "assumptions by searching the internet."
+                )
+            with get_openai_callback() as attempt_cb:
+                result = await asyncio.to_thread(executor.invoke, {"input": attempt_text})
+            cb = attempt_cb
+            steps = result.get("intermediate_steps", [])
+            if min_tools_used <= 0 or len(steps) >= min_tools_used:
+                break
+        else:
+            raise RuntimeError(
+                f"Minimum tool usage requirement not met: {min_tools_used} tools."
+            )
         prompt_tokens = int(getattr(cb, "prompt_tokens", 0) or 0)
         completion_tokens = int(getattr(cb, "completion_tokens", 0) or 0)
         cached_prompt_tokens = int(

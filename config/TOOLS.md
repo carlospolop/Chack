@@ -46,6 +46,7 @@ These are command-line tools expected to be available to the agent in the contai
 
 - **Terraform CLI**: `terraform`
 	- Terraform cli so you can check the syntax of terraform changes. Never fo a terraform apply but use it like `terraform init` and `terraform validate` to check for syntax errors.
+	- Puedes lanzar `terraform init` sin miedo en los repos que pertenecen a las organicaciones sobre las que tienes acceso con las creds de AWS
 
 
 If unsure whether a CLI exists, verify first:
@@ -66,11 +67,15 @@ Common env vars used here:
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`´
 	- AWS credentials could also be located in the /root/.aws/credentials file giving you probably access to different AWS accounts with different profiles
 	- If the credentials from the /root/.aws/credentials file are used, you need to use the needed profile with the "--profile" argument in the "aws" cli.
+	- The profile "hacktricks-training" has access to the codebuild and data of the Hacktricks Training org and labs
+	- The profile "wiki-infrastructure" has access to the Wiki AWS account
+	- The profile "naxusai" has access to the Naxus AI AWS account
 - `GOOGLE_APPLICATION_CREDENTIALS`, `GOOGLE_CLOUD_CPP_USER_PROJECT`
 - `AZURE_APP_ID`, `AZURE_SA_SECRET_VALUE`, `AZURE_TENANT_ID`, `AZURE_SA_NAME`
 - `GH_TOKEN`
 - `STRIPE_API_KEY`
 - `OPENAI_API_KEY`, `OPENAI_ADMIN_KEY`
+- Important: You can use these secrets in shell commands executions, the history of your container is not stored and is constantly being cleaned.
 
 ### Org-wide Listing Cheatsheet
 
