@@ -42,8 +42,9 @@ class _SafeSummaryBufferMemory(ConversationSummaryBufferMemory):
                 )
 
 
-def build_memory(config: ChackConfig) -> ConversationSummaryBufferMemory:
-    max_messages = config.telegram.memory_max_messages
+def build_memory(config: ChackConfig, max_messages: int | None = None) -> ConversationSummaryBufferMemory:
+    if max_messages is None:
+        max_messages = config.telegram.memory_max_messages
     if max_messages < 1:
         max_messages = 1
 

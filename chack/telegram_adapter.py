@@ -16,7 +16,7 @@ from telegram.ext import (
     filters,
 )
 
-from .agent import build_agent
+from .backends import build_executor
 from .config import ChackConfig
 from .long_term_memory import (
     build_long_term_memory,
@@ -25,7 +25,6 @@ from .long_term_memory import (
     load_long_term_memory,
     save_long_term_memory,
 )
-from .memory import build_memory
 from .pricing import estimate_cost, load_pricing, resolve_pricing_path
 from .tools import format_tool_steps
 
@@ -131,9 +130,15 @@ class TelegramBot:
     def _get_executor(self, chat_id: int):
         executor = self._executors.get(chat_id)
         if executor is None:
-            memory = build_memory(self.config)
             system_prompt = self._system_prompt_for_chat(chat_id)
-            executor = build_agent(self.config, memory=memory, system_prompt=system_prompt)
+            executor = build_executor(
+                self.config,
+                system_prompt=system_prompt,
+                session_id=f"telegram:{chat_id}",
+                max_turns=self.config.telegram.max_turns,
+                memory_max_messages=self.config.telegram.memory_max_messages,
+                summary_max_chars=self.config.telegram.long_term_memory_max_chars,
+            )
             self._executors[chat_id] = executor
         return executor
 
@@ -155,9 +160,9 @@ class TelegramBot:
         if not self.config.telegram.long_term_memory_enabled:
             return
         executor = self._executors.get(chat_id)
-        if executor is None or not getattr(executor, "memory", None):
+        if executor is None:
             return
-        messages = executor.memory.chat_memory.messages
+        messages = await executor.aget_memory_messages()
         if not messages:
             return
         path = get_long_term_memory_path(

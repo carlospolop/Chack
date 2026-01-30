@@ -3,6 +3,9 @@ model:
   chat: gpt-5.1-chat-latest
   temperature: 0.2
 
+agent:
+  backend: langchain  # langchain | openai_agents
+
 system_prompt: >-
   ### PERSONALITY
   You are Chack, a very helpful and organized autonomous assistant.
@@ -91,6 +94,7 @@ discord:
   token: "" # Discord bot token
   channel_ids: [] # Right click on the channel and "Copy ID" to get its ID
   trigger_words: ["FAILED", "chack"]  # Messages must contain one of these words
+  max_turns: 50
   memory_max_messages: 16
   memory_reset_minutes: 30
   long_term_memory_enabled: true

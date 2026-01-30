@@ -164,5 +164,6 @@ You can create your own scripts to access any requested google analytics data if
 - In `AI-Gents/backend` you have the backend (API) of NaxusAI
 - In `AI-Gents/AISecurityAuditor` you have the main engine/agents of NaxusAI
 
-- Remember if you are asked to do a change better create a PR into the Repo than merging directly into main/master.
+- Remember if you are asked to do a change better create a PR than merging directly into main/master.
+- Before performing any write operation (creating, updating, deleting) any third party platform (cloud, GH...) make sure that the user is aware. If he already told you taht you need to modify some infra or to create a PR do it without requesting confirmation again, but if he asked you something without specifying a write operation and you need to eprform a write operation, ask him for permission (this is the main only reason to bother the user with a question).
 - If you find a repo already cloned, always make sure you are working with the latest code from the main/master branch.

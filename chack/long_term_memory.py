@@ -3,8 +3,7 @@ from __future__ import annotations
 import os
 from typing import Iterable, Optional
 
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, SystemMessage
+from agents import Agent, ModelSettings, Runner
 
 from .config import ChackConfig
 
@@ -39,8 +38,12 @@ def save_long_term_memory(path: str, content: str, max_chars: int) -> None:
 def format_messages(messages: Iterable) -> str:
     lines = []
     for msg in messages:
-        role = getattr(msg, "type", msg.__class__.__name__).lower()
-        content = getattr(msg, "content", "")
+        if isinstance(msg, dict):
+            role = str(msg.get("role") or msg.get("type") or "message").lower()
+            content = msg.get("content", "")
+        else:
+            role = getattr(msg, "type", msg.__class__.__name__).lower()
+            content = getattr(msg, "content", "")
         lines.append(f"{role}: {content}")
     return "\n".join(lines).strip()
 
@@ -56,8 +59,6 @@ def build_long_term_memory(
     if "chat" in model_name:
         temperature = 1.0
 
-    llm = ChatOpenAI(model=model_name, temperature=temperature)
-
     system = config.telegram.long_term_memory_summary_prompt.replace("{max_chars}", str(max_chars))
 
     human = (
@@ -67,9 +68,14 @@ def build_long_term_memory(
         f"{conversation_text}\n\n"
         "### Write the updated long-term memory now."
     )
-
-    response = llm.invoke([SystemMessage(content=system), HumanMessage(content=human)])
-    content = getattr(response, "content", "") or ""
+    agent = Agent(
+        name="ChackMemory",
+        instructions=system,
+        model=model_name,
+        model_settings=ModelSettings(temperature=temperature),
+    )
+    result = Runner.run_sync(agent, human)
+    content = getattr(result, "final_output", "") or ""
     content = content.strip()
     if max_chars > 0 and len(content) > max_chars:
         content = content[:max_chars].rstrip()

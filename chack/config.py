@@ -31,6 +31,11 @@ class ModelConfig:
 
 
 @dataclass
+class AgentConfig:
+    backend: str = "langchain"
+
+
+@dataclass
 class TelegramConfig:
     enabled: bool = True
     token: str = ""
@@ -58,6 +63,7 @@ class DiscordConfig:
     token: str = ""
     channel_ids: List[int] = field(default_factory=list)
     trigger_words: List[str] = field(default_factory=list)
+    max_turns: int = 50
     memory_max_messages: int = 16
     memory_reset_minutes: int = 30
     long_term_memory_enabled: bool = True
@@ -71,7 +77,7 @@ class DiscordConfig:
 class ToolsConfig:
     exec_enabled: bool = True
     exec_timeout_seconds: int = 120
-    exec_max_output_chars: int = 4000
+    exec_max_output_chars: int = 5000
     duckduckgo_enabled: bool = True
     duckduckgo_max_results: int = 6
     brave_enabled: bool = True
@@ -110,6 +116,7 @@ class LoggingConfig:
 @dataclass
 class ChackConfig:
     model: ModelConfig
+    agent: AgentConfig
     telegram: TelegramConfig
     discord: DiscordConfig
     tools: ToolsConfig
@@ -203,6 +210,7 @@ def load_config(path: str) -> ChackConfig:
 
     config = ChackConfig(
         model=_load_section(raw, "model", ModelConfig),
+        agent=_load_section(raw, "agent", AgentConfig),
         telegram=telegram,
         discord=discord,
         tools=_load_section(raw, "tools", ToolsConfig),

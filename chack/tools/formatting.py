@@ -5,7 +5,7 @@ from typing import List
 def _truncate(text: str, limit: int) -> str:
     if len(text) <= limit:
         return text
-    return text[:limit] + "\n[the output was truncated]"
+    return text[:limit] + "\n[the output was truncated, exceeded limit of {} chars. You probably want to rerun the command with a grep/jq or similar pipe to extract the data you are looking for]".format(limit)
 
 
 def redact_sensitive(text: str) -> str:
