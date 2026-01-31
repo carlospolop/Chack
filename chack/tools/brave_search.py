@@ -130,7 +130,17 @@ def build_brave_search_tool(config: ToolsConfig) -> StructuredTool:
         freshness: Optional[str] = None,
         timeout_seconds: int = 20,
     ) -> str:
-        """Search Brave Search API and return a short list of results."""
+        """Search Brave Search API and return a short list of results.
+
+        Args:
+            query: Search query string.
+            count: Optional number of results to return (1-20).
+            country: Optional country code (e.g., "US").
+            search_lang: Optional search language (e.g., "en").
+            ui_lang: Optional UI language (e.g., "en-US").
+            freshness: Optional freshness filter (pd, pw, pm, py, or YYYY-MM-DDtoYYYY-MM-DD).
+            timeout_seconds: Request timeout in seconds.
+        """
         return helper._brave_search_impl(
             query=query,
             count=count,

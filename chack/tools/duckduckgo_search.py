@@ -81,7 +81,13 @@ class DuckDuckGoTool:
     def search(self, query: str) -> str:
         return self._duckduckgo_search_impl(query=query)
 
-    def _duckduckgo_search_impl(self, query: str) -> str:
+    def _duckduckgo_search_impl(self, query: str, user_agent: str | None = None) -> str:
+        """Search DuckDuckGo and return a short list of results.
+
+        Args:
+            query: Search query string.
+            user_agent: Optional custom User-Agent header override (useful to avoid blocks if the tool is not returning results).
+        """
         max_results = self.config.duckduckgo_max_results
         if not query.strip():
             return "ERROR: Query cannot be empty"
@@ -91,8 +97,13 @@ class DuckDuckGoTool:
             max_results = 20
 
         search_url = f"https://duckduckgo.com/html/?q={quote_plus(query)}"
+        ua = user_agent or (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/120.0.0.0 Safari/537.36"
+        )
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "User-Agent": ua,
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.5",
             "Connection": "keep-alive",
@@ -113,7 +124,10 @@ class DuckDuckGoTool:
         results = parser.results[:max_results]
 
         if not results:
-            return f"SUCCESS: No DuckDuckGo results found for '{query}'"
+            return (
+                f"SUCCESS: No DuckDuckGo results found for '{query}'. "
+                "Try a different user_agent."
+            )
 
         lines = [f"SUCCESS: DuckDuckGo results for '{query}' (top {len(results)}):"]
         for idx, result in enumerate(results, start=1):
@@ -124,9 +138,14 @@ class DuckDuckGoTool:
 def build_duckduckgo_search_tool(config: ToolsConfig) -> StructuredTool:
     helper = DuckDuckGoTool(config)
 
-    def _duckduckgo_search(query: str) -> str:
-        """Search DuckDuckGo and return a short list of results."""
-        return helper._duckduckgo_search_impl(query=query)
+    def _duckduckgo_search(query: str, user_agent: str | None = None) -> str:
+        """Search DuckDuckGo and return a short list of results.
+
+        Args:
+            query: Search query string.
+            user_agent: Optional custom User-Agent header override (useful to avoid blocks if the tool is not returning results).
+        """
+        return helper._duckduckgo_search_impl(query=query, user_agent=user_agent)
 
     return StructuredTool.from_function(
         name="duckduckgo_search",

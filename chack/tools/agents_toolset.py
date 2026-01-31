@@ -34,9 +34,14 @@ class AgentsToolset:
     @staticmethod
     def _make_duckduckgo_tool(helper: DuckDuckGoTool):
         @function_tool(name_override="duckduckgo_search")
-        def duckduckgo_search(query: str) -> str:
-            """Search DuckDuckGo and return a short list of results."""
-            return helper._duckduckgo_search_impl(query=query)
+        def duckduckgo_search(query: str, user_agent: str | None = None) -> str:
+            """Search DuckDuckGo and return a short list of results.
+
+            Args:
+                query: Search query string.
+                user_agent: Optional custom User-Agent header override (useful to avoid blocks if the tool is not returning results).
+            """
+            return helper._duckduckgo_search_impl(query=query, user_agent=user_agent)
 
         return duckduckgo_search
 
@@ -52,7 +57,17 @@ class AgentsToolset:
             freshness: Optional[str] = None,
             timeout_seconds: int = 20,
         ) -> str:
-            """Search Brave Search API and return a short list of results."""
+            """Search Brave Search API and return a short list of results.
+
+            Args:
+                query: Search query string.
+                count: Optional number of results to return (1-20).
+                country: Optional country code (e.g., "US").
+                search_lang: Optional search language (e.g., "en").
+                ui_lang: Optional UI language (e.g., "en-US").
+                freshness: Optional freshness filter (pd, pw, pm, py, or YYYY-MM-DDtoYYYY-MM-DD).
+                timeout_seconds: Request timeout in seconds.
+            """
             try:
                 return helper._brave_search_impl(
                     query=query,
@@ -73,7 +88,11 @@ class AgentsToolset:
         if self.config.exec_enabled:
             @function_tool(name_override="exec")
             def exec_tool(command: str) -> str:
-                """Execute a shell command locally and return combined output."""
+                """Execute a shell command locally and return combined output.
+
+                Args:
+                    command: Shell command to execute.
+                """
                 return _exec_command(command)
 
             tools.append(exec_tool)
