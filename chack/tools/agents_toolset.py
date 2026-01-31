@@ -31,6 +31,43 @@ class AgentsToolset:
         self.config = config
         self.tools = self._build_tools()
 
+    @staticmethod
+    def _make_duckduckgo_tool(helper: DuckDuckGoTool):
+        @function_tool(name_override="duckduckgo_search")
+        def duckduckgo_search(query: str) -> str:
+            """Search DuckDuckGo and return a short list of results."""
+            return helper._duckduckgo_search_impl(query=query)
+
+        return duckduckgo_search
+
+    @staticmethod
+    def _make_brave_tool(helper: BraveSearchTool):
+        @function_tool(name_override="brave_search")
+        def brave_search(
+            query: str,
+            count: Optional[int] = None,
+            country: Optional[str] = None,
+            search_lang: Optional[str] = None,
+            ui_lang: Optional[str] = None,
+            freshness: Optional[str] = None,
+            timeout_seconds: int = 20,
+        ) -> str:
+            """Search Brave Search API and return a short list of results."""
+            try:
+                return helper._brave_search_impl(
+                    query=query,
+                    count=count,
+                    country=country,
+                    search_lang=search_lang,
+                    ui_lang=ui_lang,
+                    freshness=freshness,
+                    timeout_seconds=timeout_seconds,
+                )
+            except Exception as exc:
+                return f"ERROR: Brave search failed ({exc})"
+
+        return brave_search
+
     def _build_tools(self):
         tools = []
         if self.config.exec_enabled:
@@ -42,42 +79,11 @@ class AgentsToolset:
             tools.append(exec_tool)
 
         if self.config.duckduckgo_enabled:
-            helper = DuckDuckGoTool(self.config)
-
-            @function_tool(name_override="duckduckgo_search")
-            def duckduckgo_search(query: str) -> str:
-                """Search DuckDuckGo and return a short list of results."""
-                return helper._duckduckgo_search_impl(query=query)
-
-            tools.append(duckduckgo_search)
+            ddg_helper = DuckDuckGoTool(self.config)
+            tools.append(self._make_duckduckgo_tool(ddg_helper))
 
         if self.config.brave_enabled:
-            helper = BraveSearchTool(self.config)
-
-            @function_tool(name_override="brave_search")
-            def brave_search(
-                query: str,
-                count: Optional[int] = None,
-                country: Optional[str] = None,
-                search_lang: Optional[str] = None,
-                ui_lang: Optional[str] = None,
-                freshness: Optional[str] = None,
-                timeout_seconds: int = 20,
-            ) -> str:
-                """Search Brave Search API and return a short list of results."""
-                try:
-                    return helper._brave_search_impl(
-                        query=query,
-                        count=count,
-                        country=country,
-                        search_lang=search_lang,
-                        ui_lang=ui_lang,
-                        freshness=freshness,
-                        timeout_seconds=timeout_seconds,
-                    )
-                except Exception as exc:
-                    return f"ERROR: Brave search failed ({exc})"
-
-            tools.append(brave_search)
+            brave_helper = BraveSearchTool(self.config)
+            tools.append(self._make_brave_tool(brave_helper))
 
         return tools

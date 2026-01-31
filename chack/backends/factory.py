@@ -10,9 +10,10 @@ def build_executor(
     config: ChackConfig,
     *,
     system_prompt: str,
-    session_id: str,
     max_turns: int,
     memory_max_messages: int,
+    memory_reset_to_messages: int,
+    memory_summary_prompt: str,
     summary_max_chars: int,
 ):
     backend = (config.agent.backend or "langchain").strip().lower()
@@ -20,6 +21,8 @@ def build_executor(
         memory = langchain_backend.build_langchain_memory(
             config,
             max_messages=memory_max_messages,
+            reset_to_messages=memory_reset_to_messages,
+            summary_prompt=memory_summary_prompt,
         )
         return langchain_backend.build_executor(
             config,
@@ -32,9 +35,10 @@ def build_executor(
         return openai_agents_backend.build_executor(
             config,
             system_prompt=system_prompt,
-            session_id=session_id,
             max_turns=max_turns,
             memory_max_messages=memory_max_messages,
+            memory_reset_to_messages=memory_reset_to_messages,
+            memory_summary_prompt=memory_summary_prompt,
             summary_max_chars=summary_max_chars,
         )
     raise ValueError(f"Unknown agent backend: {config.agent.backend}")

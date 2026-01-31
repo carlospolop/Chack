@@ -1,15 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import asyncio
 from typing import Any, Optional
 
 from agents import Agent, ModelSettings, Runner
 from agents.items import ToolCallItem
-from agents.memory import SQLiteSession
 
 from ..config import ChackConfig
-from ..long_term_memory import build_long_term_memory, format_messages
+from ..long_term_memory import build_long_term_memory, build_memory_summary, format_messages
 from ..tools.agents_toolset import AgentsToolset
 
 
@@ -19,29 +17,17 @@ class ToolAction:
     tool_input: Any
 
 
-def _trim_session(session: SQLiteSession, limit: int) -> None:
-    if limit <= 0:
-        return
-    try:
-        items = asyncio.run(session.get_items())
-        while len(items) > limit:
-            asyncio.run(session.pop_item())
-            items = asyncio.run(session.get_items())
-    except RuntimeError:
-        # If called inside an existing loop, skip trimming to avoid loop errors.
-        return
-
-
 @dataclass
 class AgentsExecutor:
     _config: ChackConfig
     agent: Agent
-    session: SQLiteSession
     max_turns: int
     _transcript: list[dict[str, Any]]
     _memory_limit: int
+    _memory_reset_to: int
     _summary_text: str
     _summary_max_chars: int
+    _memory_summary_prompt: str
     _base_system_prompt: str
 
     def invoke(self, payload: dict[str, Any]) -> dict[str, Any]:
@@ -52,10 +38,12 @@ class AgentsExecutor:
             )
         else:
             self.agent.instructions = self._base_system_prompt
+        input_items = list(self._transcript)
+        if user_input:
+            input_items.append({"role": "user", "content": user_input})
         result = Runner.run_sync(
             self.agent,
-            user_input,
-            session=self.session,
+            input_items,
             max_turns=self.max_turns,
         )
         output = result.final_output or ""
@@ -64,14 +52,19 @@ class AgentsExecutor:
         if output:
             self._transcript.append({"role": "assistant", "content": output})
         if self._memory_limit:
-            _trim_session(self.session, self._memory_limit)
             if len(self._transcript) > self._memory_limit:
-                removed = self._transcript[:-self._memory_limit]
-                self._transcript = self._transcript[-self._memory_limit :]
+                reset_to = self._memory_reset_to or self._memory_limit
+                if reset_to > self._memory_limit:
+                    reset_to = self._memory_limit
+                if reset_to < 1:
+                    reset_to = 1
+                removed = self._transcript[:-reset_to]
+                self._transcript = self._transcript[-reset_to:]
                 if removed:
                     conversation = format_messages(removed)
-                    self._summary_text = build_long_term_memory(
+                    self._summary_text = build_memory_summary(
                         self._config,
+                        self._memory_summary_prompt,
                         conversation,
                         self._summary_text,
                         self._summary_max_chars,
@@ -144,9 +137,10 @@ def build_executor(
     config: ChackConfig,
     *,
     system_prompt: str,
-    session_id: str,
     max_turns: int,
     memory_max_messages: int,
+    memory_reset_to_messages: int,
+    memory_summary_prompt: str,
     summary_max_chars: int,
 ) -> AgentsExecutor:
     model_name = config.model.chat or config.model.primary
@@ -166,15 +160,18 @@ def build_executor(
     max_messages = memory_max_messages
     if max_messages < 1:
         max_messages = 1
-    session = SQLiteSession(session_id=session_id)
+    reset_to = memory_reset_to_messages
+    if reset_to < 1 or reset_to > max_messages:
+        reset_to = max_messages
     return AgentsExecutor(
         _config=config,
         agent=agent,
-        session=session,
         max_turns=max_turns,
         _transcript=[],
         _memory_limit=max_messages,
+        _memory_reset_to=reset_to,
         _summary_text="",
         _summary_max_chars=summary_max_chars,
+        _memory_summary_prompt=memory_summary_prompt,
         _base_system_prompt=system_prompt,
     )

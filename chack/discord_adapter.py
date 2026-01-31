@@ -125,9 +125,13 @@ class DiscordBot(commands.Bot):
             executor = build_executor(
                 self.config,
                 system_prompt=system_prompt,
-                session_id=f"discord:{channel_id}",
                 max_turns=self.config.discord.max_turns,
                 memory_max_messages=self.config.discord.memory_max_messages,
+                memory_reset_to_messages=self.config.discord.memory_reset_to_messages,
+                memory_summary_prompt=(
+                    self.config.discord.memory_summary_prompt
+                    or self.config.telegram.memory_summary_prompt
+                ),
                 summary_max_chars=self.config.discord.long_term_memory_max_chars,
             )
             self._executors[channel_id] = executor

@@ -50,6 +50,8 @@ class TelegramConfig:
     group_require_regex: List[str] = field(default_factory=list)
     max_turns: int = 75
     memory_max_messages: int = 16
+    memory_reset_to_messages: int = 0
+    memory_summary_prompt: str = ""
     memory_reset_minutes: int = 30
     long_term_memory_enabled: bool = True
     long_term_memory_max_chars: int = 1500
@@ -65,6 +67,8 @@ class DiscordConfig:
     trigger_words: List[str] = field(default_factory=list)
     max_turns: int = 50
     memory_max_messages: int = 16
+    memory_reset_to_messages: int = 0
+    memory_summary_prompt: str = ""
     memory_reset_minutes: int = 30
     long_term_memory_enabled: bool = True
     long_term_memory_max_chars: int = 1500

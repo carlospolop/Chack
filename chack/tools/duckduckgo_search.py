@@ -15,14 +15,18 @@ class _DuckDuckGoHTMLParser(HTMLParser):
         self._current_url = ""
         self._in_result = False
         self._in_title = False
+        self._result_depth = 0
 
     def handle_starttag(self, tag, attrs):
         attrs_dict = dict(attrs)
-        if tag == "div" and attrs_dict.get("class") == "result__body":
+        if tag == "div" and _has_class(attrs_dict, "result__body"):
             self._in_result = True
             self._current_title = ""
             self._current_url = ""
-        if self._in_result and tag == "a" and attrs_dict.get("class") == "result__a":
+            self._result_depth = 1
+        elif self._in_result and tag == "div":
+            self._result_depth += 1
+        if self._in_result and tag == "a" and _has_class(attrs_dict, "result__a"):
             self._in_title = True
             self._current_url = attrs_dict.get("href", "")
 
@@ -30,16 +34,19 @@ class _DuckDuckGoHTMLParser(HTMLParser):
         if tag == "a" and self._in_title:
             self._in_title = False
         if tag == "div" and self._in_result:
-            self._in_result = False
-            if self._current_title and self._current_url:
-                self.results.append(
-                    {
-                        "title": self._current_title.strip(),
-                        "url": _normalize_duckduckgo_url(self._current_url),
-                    }
-                )
-            self._current_title = ""
-            self._current_url = ""
+            self._result_depth -= 1
+            if self._result_depth <= 0:
+                self._in_result = False
+                if self._current_title and self._current_url:
+                    self.results.append(
+                        {
+                            "title": self._current_title.strip(),
+                            "url": _normalize_duckduckgo_url(self._current_url),
+                        }
+                    )
+                self._current_title = ""
+                self._current_url = ""
+                self._result_depth = 0
 
     def handle_data(self, data):
         if self._in_title and data:
@@ -58,6 +65,13 @@ def _normalize_duckduckgo_url(url: str) -> str:
     if "uddg" in query_params and query_params["uddg"]:
         return unquote(query_params["uddg"][0])
     return url
+
+
+def _has_class(attrs: dict, class_name: str) -> bool:
+    raw = attrs.get("class", "")
+    if not raw:
+        return False
+    return class_name in str(raw).split()
 
 
 class DuckDuckGoTool:

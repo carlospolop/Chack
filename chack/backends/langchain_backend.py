@@ -72,5 +72,15 @@ def build_executor(
     return LangchainExecutor(executor=executor)
 
 
-def build_langchain_memory(config: ChackConfig, max_messages: int | None = None):
-    return build_memory(config, max_messages=max_messages)
+def build_langchain_memory(
+    config: ChackConfig,
+    max_messages: int | None = None,
+    reset_to_messages: int | None = None,
+    summary_prompt: str | None = None,
+):
+    return build_memory(
+        config,
+        max_messages=max_messages,
+        reset_to_messages=reset_to_messages,
+        summary_prompt=summary_prompt,
+    )

@@ -65,6 +65,26 @@ telegram:
     - "^chack\\b"
   max_turns: 75
   memory_max_messages: 16
+  memory_reset_to_messages: 8
+  memory_summary_prompt: >-
+    ### ROLE
+    You are a rolling-memory summarization assistant for Chack.
+
+    ### TASK
+    Integrate the new conversation lines into the existing summary so the assistant
+    can keep context after older messages are removed.
+    Preserve decisions, commitments, constraints, preferences, code changes, and open
+    questions. Exclude chit-chat and transient details.
+
+    ### INPUTS
+    Current summary:
+    {summary}
+
+    New lines of conversation:
+    {new_lines}
+
+    ### OUTPUT
+    Updated summary:
   memory_reset_minutes: 30
   long_term_memory_enabled: true
   long_term_memory_max_chars: 1500
@@ -103,6 +123,8 @@ discord:
   trigger_words: ["FAILED", "chack"]  # Messages must contain one of these words
   max_turns: 50
   memory_max_messages: 16
+  memory_reset_to_messages: 8
+  memory_summary_prompt: ""
   memory_reset_minutes: 30
   long_term_memory_enabled: true
   long_term_memory_max_chars: 1500

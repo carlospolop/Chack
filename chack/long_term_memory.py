@@ -80,3 +80,36 @@ def build_long_term_memory(
     if max_chars > 0 and len(content) > max_chars:
         content = content[:max_chars].rstrip()
     return content
+
+
+def build_memory_summary(
+    config: ChackConfig,
+    summary_prompt: str,
+    conversation_text: str,
+    previous_summary: str,
+    max_chars: int,
+) -> str:
+    model_name = config.model.chat or config.model.primary
+    temperature = 0.0
+    if "chat" in model_name:
+        temperature = 1.0
+
+    if not summary_prompt or "{summary}" not in summary_prompt or "{new_lines}" not in summary_prompt:
+        raise ValueError(
+            "memory_summary_prompt must be configured and include {summary} and {new_lines}."
+        )
+    prompt = summary_prompt.strip().replace("{max_chars}", str(max_chars))
+    human = prompt.format(summary=previous_summary or "None", new_lines=conversation_text)
+
+    agent = Agent(
+        name="ChackMemory",
+        instructions="Update the running summary. Return only the updated summary.",
+        model=model_name,
+        model_settings=ModelSettings(temperature=temperature),
+    )
+    result = Runner.run_sync(agent, human)
+    content = getattr(result, "final_output", "") or ""
+    content = content.strip()
+    if max_chars > 0 and len(content) > max_chars:
+        content = content[:max_chars].rstrip()
+    return content

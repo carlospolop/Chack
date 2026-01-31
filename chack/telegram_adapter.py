@@ -134,9 +134,10 @@ class TelegramBot:
             executor = build_executor(
                 self.config,
                 system_prompt=system_prompt,
-                session_id=f"telegram:{chat_id}",
                 max_turns=self.config.telegram.max_turns,
                 memory_max_messages=self.config.telegram.memory_max_messages,
+                memory_reset_to_messages=self.config.telegram.memory_reset_to_messages,
+                memory_summary_prompt=self.config.telegram.memory_summary_prompt,
                 summary_max_chars=self.config.telegram.long_term_memory_max_chars,
             )
             self._executors[chat_id] = executor
